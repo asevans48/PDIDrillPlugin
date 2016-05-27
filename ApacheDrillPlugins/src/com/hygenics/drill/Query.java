@@ -3,7 +3,6 @@ package com.hygenics.drill;
 
 import java.sql.*;
 import org.apache.drill.jdbc.Driver;
-import org.apache.drill.exec.ExecConstants;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;

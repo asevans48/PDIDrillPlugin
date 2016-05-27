@@ -56,11 +56,9 @@ public class Query {
 
 
 
-	public List<Map<String,Object>> query(String sql) throws SQLException{
+	public List<Map<String,Object>> query(String sql,Connection con) throws SQLException{
 		ArrayList<Map<String, Object>> results = new ArrayList<Map<String,Object>>();
-		Connection con = null;
 		try{
-			con = new Driver().connect(this.zkURL, System.getProperties());
 			Statement stmt= con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			System.out.println("Getting Data");
@@ -104,10 +102,6 @@ public class Query {
 			
 		}catch (Exception e){
 			e.printStackTrace();
-		}finally{
-			if(con != null && !con.isClosed()){
-				con.close();
-			}
 		}
 		
 		return results;
@@ -129,20 +123,18 @@ public class Query {
 		}
 	}
 	
-	public ResultSetMetaData getMetaData(String sql) throws SQLException{
-		Connection con = null;
+	public Connection getCon() throws SQLException{
+		return new Driver().connect(this.zkURL, System.getProperties());
+	}
+	
+	public ResultSetMetaData getMetaData(String sql,Connection con) throws SQLException{
 		ResultSetMetaData rsm = null;
 		try{
-			con = new Driver().connect(this.zkURL, System.getProperties());
 			PreparedStatement ps  = con.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 			rsm = rs.getMetaData();
 		}catch (Exception e){
 			e.printStackTrace();
-		}finally{
-			if(con != null && !con.isClosed()){
-				con.close();
-			}
 		}
 		return rsm;
 	}
@@ -151,9 +143,24 @@ public class Query {
 		Query q = new Query();
 		q.setZkURL("jdbc:drill:zk=localhost;schema=fs");
 		q.setDrillDriver("org.apache.drill.jdbc.Driver");
-		try{
-			List<Map<String,Object>> r = q.query("SELECT * FROM fs.`/home/aevans/drilldata/mt_sor_records.json`");
-			List<String> headers = q.getHeaders();
+		try(Connection con = q.getCon()){
+			//List<Map<String,Object>> r = q.query("SELECT * FROM fs.`/home/aevans/drilldata/mt_sor_records.json`");
+			//List<String> headers = q.getHeaders();
+			ResultSetMetaData rsm = q.getMetaData("SELECT * FROM fs.`/home/aevans/drilldata/mt_sor_records.json`",con);
+			String columns = "*";
+			int numCols = rsm.getColumnCount();
+			if(numCols > 0){
+				columns = "";
+				for(int i = 1; i < numCols; i++){
+					String name = rsm.getColumnName(i);
+					if(i < numCols -1){
+						columns += name+",";
+					}else{
+						columns += name;
+					}
+				}
+			}
+			System.out.println(columns);
 		}catch(SQLException e){
 			e.printStackTrace();
 		}

@@ -9,12 +9,16 @@ import org.pentaho.di.core.exception.KettleDatabaseException;
 import org.pentaho.di.core.plugins.DatabaseMetaPlugin;
 import org.pentaho.di.core.row.ValueMetaInterface;
 
+import java.sql.Connection;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+
 import org.apache.drill.jdbc.Driver;
 
 
 @DatabaseMetaPlugin(
 		type = "DRILLJDBC", 
-		typeDescription = "NoSQL Apache Drill Plugin"
+		typeDescription = "Apache Drill"
 )
 
 /**
@@ -25,7 +29,8 @@ import org.apache.drill.jdbc.Driver;
  *
  */
 public class PDIDrillPlugin extends BaseDatabaseMeta implements DatabaseInterface{
- 
+	String hostname = null;
+	
 	@Override
 	/**
 	 * This is Native JDBC only.
@@ -44,11 +49,12 @@ public class PDIDrillPlugin extends BaseDatabaseMeta implements DatabaseInterfac
 		return -1;
 	}
 	
-	@Override
+	
 	/**
 	 * Returns the SQL query to execute when PDI needs to determine the field layout of a table
 	 * @param		tableName		The table name should follow the schema.`table` format
 	 */
+	@Override
 	public String getSQLQueryFields(String tableName) {
 		return "SELECT * FROM " + tableName;
 	}
@@ -60,15 +66,16 @@ public class PDIDrillPlugin extends BaseDatabaseMeta implements DatabaseInterfac
 	 * @return The Select statement
 	 */
 	public String getColumnExists(String columnname, String tablename){
-		return "SELECT "+columnname+" FROM "+tablename+" WHERE 1=0";
+		return "SELECT "+columnname+" FROM "+tablename+" LIMIT 1";
 	}
 
-	@Override
+	
 	/**
 	 * Drill supports options in its url including cluster ids and multiple
 	 * zookeeper hosts.
 	 * @return true always
 	 */
+	@Override
 	public boolean supportsOptionsInURL(){
 		return true;
 	}
@@ -86,28 +93,29 @@ public class PDIDrillPlugin extends BaseDatabaseMeta implements DatabaseInterfac
 	}
 	
 	@Override
-	
 	public String getDriverClass() {
 		return Driver.class.getName();
 	}
 
-	@Override
+	
 	/**
 	 * @See getAddColumnStatement
 	 */
+	@Override
 	public String getFieldDefinition(ValueMetaInterface v, String tk, String pk, boolean use_autoinc, boolean add_fieldname, boolean add_cr) {
 		return "";
 	}
 
-	@Override
+	
 	/**
 	 * @See getAddColumnStatement
 	 */
+	@Override
 	public String getModifyColumnStatement(String tablename, ValueMetaInterface v, String tk, boolean use_autoinc, String pk, boolean semicolon) {
 		return "";
 	}
 	
-	@Override
+	
 	/**
 	 * Get the connection String which should specify zookeeper host with port +  cluster id if applicable and 
 	 * the schema as the databaseName. This manipulates the Pentaho connection idea only slightly.
@@ -117,10 +125,13 @@ public class PDIDrillPlugin extends BaseDatabaseMeta implements DatabaseInterfac
 	 * @param		schema			The schema to use (required to avoid issues)
 	 * @return		The full connection String
 	 */
+	@Override
 	public String getURL(String hostString, String clusterId, String schema) throws KettleDatabaseException {
-		if(clusterId != null && clusterId.trim().length() >0){
+		if(clusterId != null && clusterId.trim().length() >0 && !clusterId.equals("-1")){
+			this.hostname = "jdbc:drill:zk="+hostString+clusterId+";schema="+schema;
 			return "jdbc:drill:zk="+hostString+clusterId+";schema="+schema;
 		}
+		this.hostname = "jdbc:drill:zk="+hostString+";"+"schema="+schema;
 		return "jdbc:drill:zk="+hostString+";"+"schema="+schema;
 	}
 
@@ -129,34 +140,38 @@ public class PDIDrillPlugin extends BaseDatabaseMeta implements DatabaseInterfac
 		return new String[]{"drill-jdbc-all-1.6.0.jar"};
 	}
 	
-	@Override
+	
 	/**
 	 * Must obtain actual query to build table
 	 */
+	@Override
 	public boolean supportsPreparedStatementMetadataRetrieval() {
 		return false;
 	}
 	
-	@Override
+	
 	/**
 	 * Must look at result set for table data
 	 */
+	@Override
 	public boolean supportsResultSetMetadataRetrievalOnly() {
 		return true;
 	}
 	
-	@Override
+	
 	/**
 	 * Drill has full savepoint except for releaseSavepoint
 	 */
+	@Override
 	public boolean releaseSavepoint(){
 		return false;
 	}
 	
-	@Override
+	
 	/**
 	 * No transactions
 	 */
+	@Override
 	public boolean supportsTransactions(){
 		return false;
 	}

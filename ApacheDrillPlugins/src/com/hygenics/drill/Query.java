@@ -11,7 +11,9 @@ import java.util.Properties;
 
 /**
  * Try to avoid thousands of extra queries.
- * @author aevans
+ * @author Andrew Evans
+ * Copyright 2016
+ * License : Free BSD
  *
  */
 public class Query {

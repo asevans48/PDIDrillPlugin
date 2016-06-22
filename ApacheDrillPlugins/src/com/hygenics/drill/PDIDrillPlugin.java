@@ -15,6 +15,11 @@ import java.sql.SQLException;
 
 import org.apache.drill.jdbc.Driver;
 
+/*
+ * Author : Andrew Evans
+ * Copyright 2016
+ * License : Free BSD
+ */
 
 @DatabaseMetaPlugin(
 		type = "DRILLJDBC", 

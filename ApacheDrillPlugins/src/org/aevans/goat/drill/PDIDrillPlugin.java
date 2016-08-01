@@ -1,6 +1,4 @@
-package com.hygenics.drill;
-
-import com.hygenics.drill.Query;
+package org.aevans.goat.drill;
 
 import org.pentaho.di.core.database.BaseDatabaseMeta;
 import org.pentaho.di.core.database.DatabaseInterface;
@@ -13,6 +11,7 @@ import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import org.aevans.goat.drill.Query;
 import org.apache.drill.jdbc.Driver;
 
 /*

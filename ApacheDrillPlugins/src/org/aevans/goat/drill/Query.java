@@ -1,4 +1,4 @@
-package com.hygenics.drill;
+package org.aevans.goat.drill;
 
 
 import java.sql.*;
